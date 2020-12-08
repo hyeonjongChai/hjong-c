@@ -1,0 +1,602 @@
+### W08 ###
+
+# 201912 지하철 승하차 
+
+# 실습문제 1
+
+library(readxl)
+library(dplyr)
+library(descr)
+library(ggplot2)
+subway <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201912.csv")
+head(subway)
+str(subway)
+
+sw <- subset(subway, 노선명 %in% c('1호선','2호선','3호선','4호선','5호선','6호선','7호선','8호선','9호선'),
+             select = c(노선명, 역명, 승차총승객수)) 
+View(sw)
+
+sw_no_tot <- sw %>% group_by(노선명) %>% summarise(tot=sum(승차총승객수))
+sw_no_tot
+ggplot(sw_no_tot, aes(x=노선명, y= tot, fill= 노선명)) + geom_col()
+
+ggplot(sw_no_tot, aes(x= reorder(노선명, -tot), y= tot, fill= 노선명)) + geom_col() +
+  scale_y_continuous(labels = scales::comma)
+
+# 실습문제 2
+
+head(subway)
+subway$tot = subway$승차총승객수 + subway$하차총승객수
+head(subway)
+st5 <- subway %>% 
+  group_by(역명) %>% 
+  summarise(n=sum(tot)) %>%
+  arrange(desc(n)) %>%
+  head(5)
+
+st5
+st5_name <- st5$역명
+st5_name
+
+day_st5 <- subset(subway, 역명 %in% st5_name, select = c(사용일자, 역명, tot))
+View(day_st5)
+
+#역 날짜순으로 정렬
+d_day_st5 <- day_st5 %>% group_by(역명, 사용일자) %>% summarise(n=sum(tot))
+d_day_st5
+d_day_st5$역명 <- factor(d_day_st5$역명, levels = st5_name)
+ggplot(d_day_st5, aes(x=사용일자, y= n, fill= 역명)) + geom_col() +
+  scale_y_continuous(labels = scales::comma)
+
+
+# 필요한 라이브러리 불러오기
+
+library(readxl)
+library(dplyr)
+library(descr)
+library(ggplot2)
+
+# 데이터 준비_데이터 불러오기
+
+subway1 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201901.csv")
+subway2 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201902.csv")
+subway3 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201903.csv")
+subway4 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201904.csv")
+subway5 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201905.csv")
+subway6 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201906.csv")
+subway7 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201907.csv")
+subway8 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201908.csv")
+subway9 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201909.csv")
+subway10 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201910.csv")
+subway11 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201911.csv")
+subway12 <- read.csv("C:/Rstudy/2019_subway/CARD_SUBWAY_MONTH_201912.csv")
+
+# 데이터 준비_데이터 형태 파악하기
+
+head(subway1)
+str(subway1)
+str(subway2)
+str(subway3)
+str(subway4)
+str(subway5)
+str(subway6)
+str(subway7)
+str(subway8)
+str(subway9)
+str(subway10)
+str(subway11)
+str(subway12)
+
+# 데이터 결합
+
+subway_2019 <- bind_rows(subway1,subway2,subway3,subway4,subway5,subway6,
+                         subway7,subway8,subway9,subway10,subway11,subway12)
+
+# 데이터 결합_데이터 파악
+head(subway_2019)
+str(subway_2019)
+
+# 데이터 가공 및 통합_1차 데이터 추출: 1~9호선
+subway$총승객수 = subway$승차총승객수 + subway$하차총승객수
+head(subway)
+sw_station <- subway %>% group_by(역명)
+head(sw_station)
+View(sw_station)
+
+### W09 ###
+
+### W10 ###
+
+install.packages('treemap')
+library(readxl)
+library(dplyr)
+library(treemap)
+library(ggplot2)
+
+
+ck <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/Rstudy/치킨집_가공.xlsx")
+head(ck)
+table(is.na(ck$소재지전체주소))
+addr <- substr(ck$소재지전체주소,11,16)
+head(addr)
+
+addr_num <- gsub("[0-9]","",addr)
+addr_trim <- gsub(" ","",addr_num)
+head(addr_trim)
+
+addr_count <- addr_trim %>% table() %>% data.frame()
+head(addr_count)
+
+treemap(addr_count, index = '.', vSize = 'Freq', title = "서대문구 동별 치킨집 분포포")
+arrange(addr_count, desc(Freq)) %>% head()
+
+
+ck <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/Rstudy/치킨집_가공2.xlsx")
+head(ck)
+table(is.na(ck$소재지전체주소))
+addr <- substr(ck$소재지전체주소,11,16)
+head(addr)
+addr_num <- gsub("[0-9]","",addr)
+ck$소재지전체주소 <- gsub(" ","",addr_num)
+head(addr_trim)
+
+table(is.na(ck$인허가일자))
+ck$인허가일자 <- substr(ck$인허가일자,1,4)
+head(date)
+
+ck_year_count <- ck %>% group_by(인허가일자, 소재지전체주소) %>% summarise(n=n())
+ck_year_count
+
+ggplot(ck_year_count, aes(x=reorder(소재지전체주소,n), y=n, fill= 인허가일자)) + geom_col() + coord_flip()
+
+############당구장
+bil <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/Rstudy/당구장_가공.xlsx")
+head(bil)
+table(is.na(bil$인허가일자))
+table(is.na(bil$소재지전체주소))
+table(is.na(bil$영업상태명))
+
+bil <- bil %>% filter(!is.na(소재지전체주소))
+table(is.na(bil$소재지전체주소))
+
+bil_ft <- subset(bil, 영업상태 = "영업/정상", select = c(인허가일자, 소재지전체주소))
+table(is.na(bil_ft))
+
+bil_ft$addr <- substr(bil_ft$소재지전체주소,7,10)
+head(bil_ft$addr)
+table(bil_ft$addr)
+
+bil_ft$addr <- gsub("중구 \\w", "중구", bil_ft$addr)
+table(bil_ft$addr)
+
+bil_ft$year <- substr(bil_ft$인허가일자,1,4)
+bil_ft <- subset(bil_ft, year >= 2010)
+table(bil_ft$year)
+
+ggplot(bil_ft, aes(x=addr, fill=year)) + geom_bar() + ggtitle("서울시 최근 10년간 구별 당구장 인가현황")
+
+bil_ft$year <- factor(bil_ft$year, levels = c(2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010))
+
+ggplot(bil_ft, aes(x=addr, fill=year)) + geom_bar() + ggtitle("서울시 최근 10년간 구별 당구장 인가현황")
+
+bil_as <- bil_ft %>% group_by(addr,year) %>% summarise(n=n())
+bil_as
+ggplot(bil_as, aes(x=reorder(addr,-n, FUN=sum), y=n, fill=year)) +geom_col() + ggtitle("서울시 최근 10년간 구별 당구장 인가현황")
+
+### W11 ###
+
+#지역별 미세먼지 농도 비교하기
+
+library(readxl)
+library(dplyr)
+
+dustdata <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/dustdata.xlsx")
+str(dustdata)
+
+dustdata_anal <- dustdata %>% filter(area %in% c("성북구", "중구"))
+View(dustdata_anal)
+
+install.packages("psych")
+library(psych)
+
+dustdata_anal_area_sb <- subset(dustdata_anal, area=="성북구")
+dustdata_anal_area_jg <- subset(dustdata_anal, area=="중구")
+
+dustdata_anal_area_sb
+dustdata_anal_area_jg
+
+describe(dustdata_anal_area_sb$finedust)
+describe(dustdata_anal_area_jg$finedust)
+
+boxplot(dustdata_anal_area_sb$finedust, dustdata_anal_area_jg$finedust,
+        main = "finedust_compare", xlab ="AREA", names = c("성북구", "중구"), ylab = "FINEDUST_PM", col = c("blue", "green"))
+
+
+# ggplot2 - line 그래프(Orange 이용)
+
+library(dplyr)
+library(ggplot2)
+
+View(Orange)
+Orange %>% filter(Tree == 1) %>% ggplot(aes(age, circumference)) + geom_line()
+Orange %>% filter(Tree == 1) %>% ggplot(aes(age, circumference)) + geom_line(color = "red")
+
+# color를 이용해 변수 구분할 때는 aes에 색상 적용
+
+# 방법 1
+ggplot(Orange, aes(age, circumference, color = Tree)) + geom_line()
+# 방법 2
+ggplot(Orange, aes(age, circumference)) + geom_line(aes(color = Tree))
+
+# LINE 그래프 타입
+# LINE TYPE 1 ~ 6 색처럼 AES로 지정 가능 뒷 배경 theme
+
+ggplot(Orange, aes(age, circumference, color = Tree)) + geom_line(linetype = 6) + theme(panel.background = element_blank())
+
+ggplot(Orange, aes(age, circumference)) + geom_line(aes(linetype = Tree)) + theme(panel.background = element_blank())
+
+ggplot(Orange, aes(age, circumference, color = Tree)) + geom_line(aes(linetype = Tree)) + theme(panel.background = element_blank())
+
+# LINE group 속성
+# GROUP을 지정해주어야한다.
+
+ggplot(Orange, aes(age, circumference, color = Tree)) + geom_line()
+
+ggplot(Orange, aes(age, circumference, color = Tree, group = Tree)) + geom_line()
+
+library(ggplot2)
+library(readxl)
+library(dplxr)
+library(reshape2)
+
+se_y10_dust <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/seoul_y10_finedust.xlsx")
+View(se_y10_dust)
+
+#가로열 데이터를 세로열로 변환(MELT함수)
+se_y10_dust2 <- melt(se_y10_dust, id.vars = "year",
+                     measure.vars = c("1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"))
+
+View(se_y10_dust2)
+se_y10_dust2 <- rename(se_y10_dust2, mon = variable, f_dust = value)
+se_y10_dust2$year <- factor(se_y10_dust2$year)
+se_y10_dust3 <- se_y10_dust2 %>% arrange(year)
+View(se_y10_dust3)
+
+ggplot(se_y10_dust3, aes(mon, f_dust, color = year, group = year)) + geom_line()
+
+### W12 ###
+
+# pie chart
+# 누적막대그래프를 만든 후, 그것을 이용하여 원형 그래프를 만드는 원리
+
+cnt <- Cars93 %>% group_by(Type, Origin) %>% summarise(n = n())
+cnt
+
+ggplot(cnt, aes(x = "", y = n, fill = Type)) + facet_grid(facets = . ~ Origin) +
+  geom_bar(stat = "identity", width = 1) + coord_polar(theta = "y")
+  
+# 산점도
+
+library(dplyr)
+library(readxl)
+library(ggplot2)
+
+library(MASS)
+
+names(Cars93)
+table(Cars93$EngineSize)
+
+ggplot(data = Cars93, aes(x= EngineSize, y = MPG.highway)) + geom_point()
+
+# shape 1 ~25, 
+ggplot(data = Cars93, aes(x= EngineSize, y = MPG.highway)) +
+  geom_point(shape = 13, size = 2, color = "blue") + ggtitle("Scatter Plot: MPG.highway vs EngineSize")
+
+ggplot(data = Cars93, aes(x= Weight, y = MPG.highway, color = Type)) +
+  geom_point(shape = 19, size = 2) + ggtitle("Scatter Plot by Type, using different colors")
+
+# facet_grid() 함수,  면 분할
+
+ggplot(data = Cars93, aes(x= Weight, y = MPG.highway, color = Type)) +
+  geom_point(shape = 19, color = "black") + 
+  facet_grid(Type ~.)
+
+ggplot(data = Cars93, aes(x= Weight, y = MPG.highway, color = Type)) +
+  geom_point(shape = 19, color = "black") + 
+  facet_grid(.~ Type)
+
+ggplot(data = Cars93, aes(x= Weight, y = MPG.highway, color = Type)) +
+  geom_point(shape = 19, color = "black") + 
+  facet_grid(Origin ~ Type)
+
+# 치킨집 인허가현황 분석
+# 치킨집이 가장 많은 5개구의 최근 20년간 인허가 현황
+
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+
+#엑셀파일 열어서 데이터, 결측치 확인
+
+chicken_s <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/서울치킨인허가.xlsx")
+names(chicken_s)
+table(is.na(chicken_s))
+table(is.na(chicken_s$인허가일자))
+table(is.na(chicken_s$영업상태명))
+table(is.na(chicken_s$소재지전체주소))
+chicken_s <- chicken_s %>% filter(!is.na(소재지전체주소))
+table(is.na(chicken_s$소재지전체주소))
+
+#영업/정상 업체의 주요변수로 데이터셋 생성
+chicken_s_ft <- subset(chicken_s, 영업상태명="영업/정상", 
+                   select=c(인허가일자,소재지전체주소))
+table(is.na(chicken_s_ft))
+
+# 구 이름 추출 및 정규화
+chicken_s_ft$addr <- substr(chicken_s_ft$소재지전체주소, 7, 10)
+table(chicken_s_ft$addr)
+chicken_s_ft$addr <- gsub("중구 \\w", "중구", chicken_s_ft$addr)
+chicken_s_ft$addr <- gsub(" ","", chicken_s_ft$addr)
+table(chicken_s_ft$addr)
+
+#연도 자료 추출
+table(chicken_s_ft$인허가일자)
+chicken_s_ft$year <- substr(chicken_s_ft$인허가일자, 1, 4)
+table(chicken_s_ft$year)
+chicken_s_ft$year
+
+#구별로 가장 많은 치킨집 상위 5개 추출
+chicken_s_5 <- chicken_s_ft %>% group_by(addr) %>% summarise(n=n()) %>% arrange(desc(n)) %>% head(5)
+
+chicken_s_5
+
+
+chicken_s_ft <- subset(chicken_s_ft, year >= '2000', select=c(addr,year))
+chicken_s_ft
+
+#치킨집 상위 5개구 별로 연도별 인허가 현황 카운트
+
+chicken_1 <- chicken_s_ft %>% subset(addr=='마포구') %>% group_by(year) %>% summarise(마포구=n())
+chicken_2 <- chicken_s_ft %>% subset(addr=='구로구') %>% group_by(year) %>% summarise(구로구=n())
+chicken_3 <- chicken_s_ft %>% subset(addr=='양천구') %>% group_by(year) %>% summarise(양천구=n())
+chicken_4 <- chicken_s_ft %>% subset(addr=='중랑구') %>% group_by(year) %>% summarise(중랑구=n())
+chicken_5 <- chicken_s_ft %>% subset(addr=='동대문구') %>% group_by(year) %>% summarise(동대문구=n())
+
+#상위 5개구의 연도별 집계 데이터 합치기
+full_col <- full_join(chicken_1,chicken_2, by = "year")
+full_col <- full_join(full_col,chicken_3, by = "year")
+full_col <- full_join(full_col,chicken_4, by = "year")
+full_col <- full_join(full_col,chicken_5, by = "year")
+
+full_col
+
+#결측치 0로 만들기
+full_col[is.na(full_col)] = 0
+View(full_col)
+
+# 상위 5개구의 연도별 집계 데이터 가로를 세로로 변환
+exam1 <- melt(full_col, id = "year", measure.vars=c("마포구","구로구","양천구","중랑구","동대문구"))
+View(exam1)
+
+# 변수명 변경
+exam1 <- rename(exam1, 구이름 = variable)
+exam1 <- rename(exam1, 허가수 = value)
+levels(exam1$구이름)
+
+# 구이름의 레벨확인후 구이름과 연도로 정렬
+exam1_arrange <- exam1 %>% arrange(구이름, year)
+View(exam1_arrange)
+
+# 그래프 그리기
+ggplot(exam1_arrange, aes(year,허가수,group=구이름))+geom_line(aes(color=구이름))
+
+### W13 ###
+
+# 레스토랑 매출 분석
+
+library(dplyr)
+library(readxl)
+library(ggplot2)
+
+
+# 엑셀파일 분석 및 로드
+customer_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/customer_r.xlsx")
+reservation_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/reservation_r.xlsx")
+order_info_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/order_info_r.xlsx")
+item_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/item_r.xlsx")
+
+# 조작 편의성을 위해 열이름을 소문자로 변환 
+colnames(customer_r) <- tolower(colnames(customer_r))   
+colnames(reservation_r) <- tolower(colnames(reservation_r))
+colnames(order_info_r) <- tolower(colnames(order_info_r))
+colnames(item_r) <- tolower(colnames(item_r))
+
+head(customer_r)
+head(reservation_r)
+head(order_info_r)
+head(item_r)
+
+# 데이터셋 결합하기 %>% 필요한 변수 선택하기 %>% 정렬하기
+df_cfm_order <- inner_join(reservation_r, order_info_r, by = "reserv_no")
+df_cfm_order <- df_cfm_order %>% select(customer_id, reserv_no, visitor_cnt, cancel, order_no, item_id, sales) 
+df_cfm_order <- df_cfm_order %>% arrange(customer_id, reserv_no, item_id)
+head(df_cfm_order)
+
+
+df_cfm_order <- inner_join(reservation_r, order_info_r, by = "reserv_no") %>%
+  select(customer_id, reserv_no, visitor_cnt, cancel, order_no, item_id, sales) %>%
+  arrange(customer_id, reserv_no, item_id)
+
+head(df_cfm_order)
+
+# 총 방문 고객수, 총 매출
+# 요약 데이터셋 생성(df_sct_graph) %>% customer_id 로 그룹화 %>% 요약하기
+df_sct_graph <- df_cfm_order %>% 
+  group_by(customer_id) %>% 
+  summarise( vst_cnt = sum(visitor_cnt), cust_amt = sum(sales/1000))
+head(df_sct_graph)    
+
+# 그래프 그리기
+ggplot(data = df_sct_graph, aes(x = vst_cnt, y = cust_amt)) + 
+  geom_point()
+
+# 축 조정하기
+ggplot(data = df_sct_graph, aes(x = vst_cnt, y = cust_amt)) + 
+  geom_point() + xlim(0, 70) + ylim(0, 900) 
+
+head(customer_r)   
+
+# 성별 추가하기
+df_sct_graph2 <- inner_join(df_sct_graph, customer_r, by = "customer_id") %>% 
+  select(vst_cnt, cust_amt, sex_code)
+
+head(df_sct_graph2)    
+
+
+# 결측치 처리하기
+table(is.na(df_sct_graph2$vst_cnt))
+table(is.na(df_sct_graph2$cust_amt))
+table(is.na(df_sct_graph2$sex_code))
+
+df_sct_graph3 <- df_sct_graph2 %>% filter(!is.na(df_sct_graph2$sex_code))
+table(is.na(df_sct_graph3))
+
+# 그룹별로 색상 적용하기
+ggplot(data = df_sct_graph3, aes(x = vst_cnt, y = cust_amt)) + 
+  geom_point(aes(color = sex_code))  
+
+ggplot(data = df_sct_graph3, aes(x = vst_cnt, y = cust_amt)) + 
+  geom_point(aes(color = sex_code)) + xlim(0, 50) + ylim(0, 600) 
+
+##############################
+# 실습 2 : 지점별 예약건수와 매출은 어떻게 될까?
+
+table(reservation_r$branch)
+temp <- table(reservation_r$branch) %>% data.frame() %>% arrange(temp, desc(Freq))
+temp
+
+
+no_cancel_data <- reservation_r %>% filter(cancel == "N")
+temp <- table(no_cancel_data$branch) %>% data.frame()
+temp <- arrange(temp, desc(Freq))
+temp
+
+df_f_join_1 <- inner_join(reservation_r, order_info_r, by = "reserv_no")
+df_f_join_2 <- inner_join(df_f_join_1, item_r, by = "item_id")
+head(df_f_join_2)
+
+df_branch_sales <- df_f_join_2 %>% filter(branch == "강남" | branch =="마포" | branch == "강서") %>%
+  group_by(branch, product_name) %>% summarise(sales_amt = sum(sales) / 1000)
+
+
+
+df_branch_sales
+View(df_branch_sales)
+
+ggplot(df_branch_sales, aes(x= "", y = sales_amt, fill = product_name)) +
+  geom_bar(stat = "identity") + facet_grid(facets = . ~ branch)
+
+ggplot(df_branch_sales, aes(x= "", y = sales_amt, fill = product_name)) +
+  geom_bar(stat = "identity") + facet_grid(facets = . ~ branch) +
+  coord_polar(theta = "y")
+
+##############################
+
+# 교차빈도 분석
+
+table(mtcars$gear)
+table(mtcars$cyl, mtcars$gear)
+
+
+##############################
+
+# 지점별 메뉴아이템 주문 비율 
+
+df_f_join_1 <- inner_join(reservation_r, order_info_r, by = "reserv_no")
+df_f_join_2 <- inner_join(df_f_join_1, item_r, by = "item_id")
+
+df_branch_items <- df_f_join_2 %>% filter(branch == "강남" | branch =="마포" | branch == "강서")
+
+table(df_branch_items$branch, df_branch_items$product_name) 
+df_branch_items_table <- as.data.frame(table(df_branch_items$branch, df_branch_items$product_name))
+df_branch_items_table
+
+df_branch_items_percent <- df_branch_items_table %>%
+  group_by(df_branch_items_table$Var1) %>%
+  mutate(percent_items = Freq/sum(Freq) * 100) 
+
+df_branch_items_percent
+
+gg <- ggplot(df_branch_items_percent, aes(x = Var1, y = percent_items, group = Var1, fill = Var2)) +
+  geom_bar(stat = "identity")
+
+# 제목과 범례 이름 지정
+gg <- gg +
+  labs(title = "지점별 주문 건수 그래프", x = "지점", y = "메뉴 아이템 판매비율", fill = "메뉴 아이템")
+gg
+
+### W14 ###
+
+# 12/2 응용통계학
+# 프로젝트 1 : 
+library(dplyr)
+library(readxl)
+library(ggplot2)
+
+customer_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/customer_r.xlsx")
+reservation_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/reservation_r.xlsx")
+order_info_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data//order_info_r.xlsx")
+item_r <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/item_r.xlsx")
+View(order_info_r)
+
+# 조작 편의성을 위해 열이름을 소문자로 변환 
+colnames(customer_r) <- tolower(colnames(customer_r))   
+colnames(reservation_r) <- tolower(colnames(reservation_r))
+colnames(order_info_r) <- tolower(colnames(order_info_r))
+colnames(item_r) <- tolower(colnames(item_r))
+
+df_f_join_1 <- inner_join(reservation_r, order_info_r, by = "reserv_no")
+View(df_f_join_1)
+
+df_f_data <- df_f_join_1 %>% group_by(customer_id) %>% summarise(visit_sum = n_distinct(reserv_no), sales_sum = sum(sales)/1000) %>% arrange(customer_id)
+
+df_f_data
+
+summary(df_f_data)
+ggplot(data = df_f_data, aes(x = "", y = visit_sum)) + geom_boxplot(width = 0.8, outlier.size = 2, outlier.colour = "red") + labs(title = "방문 횟수 상자그림", x = "빈도", y = "방문횟수")
+
+ggplot(data = df_f_data, aes(x = "", y = sales_sum)) + geom_boxplot(width = 0.8, outlier.size = 2, outlier.colour = "red") + labs(title = "매출 상자그림", x = "매출", y = "금액")
+
+quantile(df_f_data$visit_sum, probs = c(0.6, 0.9))
+quantile(df_f_data$sales_sum, probs = c(0.6, 0.9))
+
+total_sum_data <- df_f_data %>% summarise(t_visit_sum = sum(visit_sum),
+                                          t_sales_sum = sum(sales_sum))
+total_sum_data
+
+loyalty_sum_data <- df_f_data %>% summarise(l_visit_sum = sum(ifelse(visit_sum > 2, visit_sum, 0)),
+                                            l_sales_sum = sum(ifelse(sales_sum > 135, sales_sum,0)))
+
+loyalty_sum_data / total_sum_data *100
+
+
+# 프로젝트 2
+
+df1 <- inner_join(reservation_r, order_info_r, by =  "reserv_no")
+df2 <- inner_join(df1, item_r, by = "item_id")
+snw <- c("M0005", "M0009")
+df3 <- df2 %>% filter(item_id %in% snw) %>% group_by(reserv_no) %>% mutate(order_count = n()) %>% select(branch, reserv_no, order_count)
+View(df3)
+
+df4 <- df3 %>% distinct(branch, reserv_no, order_count) %>% filter(order_count == 2) %>% arrange(branch)
+
+df5 <- df2 %>% filter((reserv_no %in% df4$reserv_no) & (item_id %in% snw)) %>% group_by(reserv_no, product_name) %>% summarise(sales_amount = sum(sales) / 1000) %>% arrange(product_name, reserv_no)
+
+View(df5)
+
+steak <- df5 %>% filter(product_name == "STEAK")
+wine <- df5 %>% filter(product_name == "WINE")
+
+plot(steak$sales_amount, wine$sales_amount)
+cor(steak$sales_amount, wine$sales_amount)
