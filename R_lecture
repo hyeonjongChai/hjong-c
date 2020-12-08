@@ -1,4 +1,4 @@
-# W02
+### W02 ###
 
 x3 <- seq(1,10)
 x3
@@ -47,3 +47,327 @@ matrix(z, nrow = 4, ncol = 5, byrow = T)
 
 e <- seq(1,99, by=2)
 matrix(e, nrow = 10, ncol = 5, byrow = T)
+
+
+### W03 ###
+
+# 배열 생성하기
+# array(데이터, dim = c(row, column, dimension))
+
+y <- c(1:10)
+array(y, dim = c(4,3,2))
+
+###실습문제
+
+w <- seq(1,40)
+array(w, dim = c(4,5,2))
+
+# 리스트 생성하기
+# (데이터 형식 구분되서 출력)
+
+list_1 <- list(c(1,2,3), "Hello")
+list_1
+str(list_1)
+
+# 데이터 프레임 생성하기
+
+id <- c(1:10)
+sex <- c("F", "M","F","F", "M", "M","F","F", "M", "F")
+age <- c(24, 13, 50, 58, 88, 34, 45, 25, 53, 85)
+area <- c("서울", "대구", "부산", "서울", "광주", "울산", "서울", "경기", "제주", "경기")
+
+df_ex <- data.frame(id, sex, age, area)
+df_ex
+str(df_ex)
+
+### 실습문제
+
+ID <- c("1", "2", "3", "4", "5")
+MID_EXAM <- c(10, 25, 100, 75, 30)
+CLASS <- c("1반","2반","3반","1반","1반")
+
+exaple_test <- data.frame(ID, MID_EXAM, CLASS)
+exaple_test
+
+###
+
+name <- c("홍", "김", "이", "정")
+eng <- c(80,90,85,90)
+mat <- c(100,80,90,70)
+
+class_test <- data.frame(name,eng,mat)
+class_test
+
+###
+
+sales <- data.frame(
+  fruit = c("사과", "딸기", "수박"),
+  price = c(1800,1500,3000),
+  volume = c(24,38,13))
+
+sales
+
+# 엑셀파일 불러오기
+library(readxl)
+excel_ex <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex.xls")
+View(excel_ex)
+
+# 탭으로 구분된 TXT 파일 가져오기
+ex_data <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex.txt")
+View(ex_data)
+
+ex_data <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex.txt", header = T)
+View(ex_data)
+
+ex_data_skip2 <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex.txt", header = T, skip = 2)
+View(ex_data_skip2)
+
+ex_data_read5 <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex.txt", header = T, nrow =5)
+View(ex_data_read5)
+
+# 쉼표로 구분된 TXT파일 가져오기
+ex1_data <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex1.txt", header = T, sep = ",")
+View(ex1_data)
+
+# 변수명을 추가하여 가져오기
+varname <- c("ID", "SEX", "AGE", "AREA")
+ex2_data <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex2.txt", sep = ",", col.names = varname)
+ex2_data
+
+# R 데이터 저장하고 불러오기
+## RDA 파일로 저장하고 불러오기
+id <- c(1:10)
+sex <- c("F", "M","F","F", "M", "M","F","F", "M", "F")
+rda_save <- data.frame(id = id, sex= sex)
+save(rda_save, file = "data_ex1.rda")
+
+load("data_ex1.rda")
+rda_save
+
+write.csv(rda_save, file = "C:/Users/yssg9187/Desktop/20-2/6. 응용통계/Rstudy/data_ex1")
+
+###실습문제
+varname <- c("ID", "SEX", "AGE", "AREA")
+exdata <- read.table("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/data_ex2.txt", sep = ",", skip =1, nrow=5, col.names = varname)
+View(exdata)
+
+##변수명 변경하기
+library(dplyr)
+
+exdata1
+ls(exdata1)
+exdata1 <- rename(exdata1, Y17_AMT = AMT17, Y16_AMT = AMT16)
+View(exdata1)
+
+## 파생 변수 생성하기
+exdata1$AMT <- exdata1$Y16_AMT + exdata1$Y17_AMT
+exdata1$CNT <- exdata1$Y16_CNT + exdata1$Y17_CNT
+
+exdata1$AVG_AMT <- exdata1$AMT / exdata1$CNT
+exdata1$AGE50_YN <- ifelse(exdata1$AGE >= 50, "Y", "N")
+
+exdata1$AGE_GR10 <- ifelse(exdata1$AGE >= 50, "A1.50++",
+                            ifelse(exdata1$AGE >= 40, "A2.4049",
+                                   ifelse(exdata1$AGE >= 30, "A3.3039",
+                                          ifelse(exdata1$AGE >= 20, "A4.2029", "A5.0019"))))
+exdata1
+
+### W04 ###
+
+## 데이터 추출부터 정제까지, 데이터 전처리
+### 필요한 데이터 추출하기
+library(dplyr)
+exdata1 %>% select(ID, AREA, AGE)
+exdata1 %>% select(-AREA)
+
+exdata1 %>% filter(AREA == "서울")
+exdata1 %>% filter(AREA == "서울" & Y17_CNT >= 10)
+
+### 실습문제
+exdata1 %>% filter(AREA == "서울" & 10 <= Y17_CNT & Y17_CNT <= 30 ) 
+  
+###
+exdata1 %>% filter(AREA != "서울" & SEX == "M")
+
+### 데이터 정렬하기
+exdata1 %>% arrange(AGE) # 오름차순
+exdata1 %>% arrange(desc(Y17_CNT)) # 내림차순
+exdata1 %>% arrange(AGE, desc(Y17_CNT))
+
+### subset 함수
+
+a <- c(1:9)
+b <- c(11:19)
+c <- c(101:109)
+df <- data.frame(a,b,c)
+
+filter(df, a > 5)
+subset(df, b > 13)
+subset(df, b > 13, select = c(a,c))
+
+### 결측치 제거하기
+
+df <- data.frame(sex = c("M", "F", NA, "F", "M"),
+                 score = c(100, 20, 30, 50, NA))
+table(is.na(df))
+df %>% filter(is.na(score))
+
+df_na <- df %>% filter(!is.na())
+df_na
+
+### 실습문제
+df <- data.frame(sex = c("M", "F", NA, "F", "M"),
+                 score = c(100, 20, 30, 50, NA))
+
+df1 <- df %>% filter(!is.na(score))
+df1
+table(is.na(df1$score))
+mean(df1$score)
+sum(df1$score)      
+
+###
+test <- data.frame(name = c("kim1", "lee1", "park1", "kim2", "park2", "lee2", "kim3"),
+                   kor = c(54,92,83,NA,74,55,52),
+                   eng = c(61,82,NA,64,84,60,58))
+
+test$avg <- (test$kor + test$eng) / 2 
+test$result <- ifelse(test$avg >= 70, "합격", "불합격" )
+test <- test %>% filter(!is.na(avg)) %>% arrange(desc(avg), desc(eng))
+test
+
+### 데이터 요약하기
+exdata1
+exdata1 %>% summarise(TOT_Y17_AMT = sum(Y17_AMT))
+
+exdata1 %>% group_by(AREA) %>% summarise(sum_Y17_AMT = sum(Y17_AMT))
+
+### 데이터 결합하기
+# bind_rows() 세로결합
+
+library(readxl)
+m_history <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample2_m_history.xlsx")
+f_hisiory <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample3_f_history.xlsx")
+
+ex_bindjoin <- bind_rows(m_history, f_hisiory)
+ex_bindjoin
+
+### 실습문제
+test1 <- data.frame(ID = c(1,2),
+                    거주지 = c("서울", "부산"))
+test2 <- data.frame(ID = c(3,4),
+                    성별 = c("남", "여"))
+
+test_bindjoin <- bind_rows(test1, test2)
+test_bindjoin
+
+### 가로결합 left_join()  
+y17_history <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample4_y17_history.xlsx")
+y16_history <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample5_y16_history.xlsx")
+
+test_leftjoin <- left_join(y17_history, y16_history, by = "ID")
+View(test_leftjoin)
+
+### 실습문제
+test3 <- data.frame(ID = c(1,2),
+                    거주지 = c("서울", "부산"))
+test4 <- data.frame(ID2 = c(1,2),
+                    성별 = c("남", "여"))
+
+test4 <- rename(test4, ID = ID2)
+test3
+test4
+test_bind_col <- left_join(test3, test4, by = "ID")
+test_bind_col
+
+### 가로결합 inner_join
+y17_history <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample4_y17_history.xlsx")
+y16_history <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample5_y16_history.xlsx")
+
+test_innerjoin <- inner_join(y17_history, y16_history)
+View(test_innerjoin)
+
+### 실습문제
+test5 <- data.frame(ID = c(1,2,3),
+                    거주지 = c("서울", "부산", "제주"))
+test6 <- data.frame(ID = c(1,2,4),
+                    성별 = c("남", "여", "남"))
+
+inner_join(test5,test6)
+
+### 가로결합 full_join()
+full_join(y17_history, y16_history)
+
+### W05 ###
+
+### 실습문제
+
+test7 <- data.frame(ID = c(1,2,3,5),
+                    거주지 = c("서울", "부산","광주", "제주"))
+test8 <- data.frame(ID = c(1,2,4,5),
+                    성별 = c("남", "여", "남", "남"))
+test_col_full <- full_join(test7,test8)
+test_col_full
+
+test11 <- data.frame(ID = c(1,2,3,5,7),
+                     거주지 = c(NA, "부산","광주", "제주","제주"))
+test12 <- data.frame(ID = c(1,2,4,6,7),
+                     성별 = c("남", "여", "남", "남", "여"))
+
+test_join <- inner_join(test11,test12, by = "ID") %>% filter(!is.na(거주지))
+test_join
+
+
+## 데이터 분석을 위한 기초 통계 분석 함수
+### 빈도 분석
+library(readxl)
+library(descr)
+library(dplyr)
+library(ggplot2)
+
+exdata1 <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/Sample1.xlsx")
+exdata1
+freq_test <- freq(exdata1$AREA)
+
+## 데이터 이해도를 높일 수 있는 그래프
+### 줄기 잎 그림
+stem(exdata1$AGE)
+
+### 히스토그램
+hist(exdata1$AGE)
+hist(exdata1$AGE, xlim = c(0,60), ylim = c(0,10), main = "나이 분포")
+
+### 막대그래프
+bar_sex <- table(exdata1$SEX)
+bar_sex
+barplot(bar_sex, ylim = c(0,10), main = "성별분포", xlab = "성별", ylab = "FREQUENCY", names = c("Female", "Male"), col = c("pink", "navy"))
+
+### 상자그림
+exdata1
+boxplot(exdata1$Y17_CNT, exdata1$Y16_CNT, main = "COUNT PER YEAR", xlab = "YEAR", ylab = "COUNT", names = c(2017, 2016), col = c("green", "yellow"))
+
+### 실습문제
+mid_exam <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/mid_exam.xlsx")
+final_exam <- read_excel("C:/Users/yssg9187/Desktop/20-2/6. 응용통계/data/final_exam.xlsx")
+
+mid_exam
+mid_exam <- rename(mid_exam, MATH_MID = MATH, ENG_MID= ENG)
+
+### 
+final_exam <- rename(final_exam, MATH_FINAL = MATH, ENG_FINAL = ENG)
+final_exam
+
+###
+total_exam <- inner_join(mid_exam, final_exam, by = "ID")
+total_exam
+
+total_exam$MATH_AVG = (total_exam$MATH_MID + total_exam$MATH_FINAL) /2 
+total_exam$ENG_AVG = (total_exam$ENG_MID + total_exam$ENG_FINAL) /2 
+total_exam$TOTAL_AVG = (total_exam$MATH_AVG + total_exam$ENG_AVG) /2
+
+total_exam
+
+###
+super_exam <- total_exam %>% filter(MATH_MID >= 80 & ENG_MID >= 90)
+super_exam
+
+boxplot(total_exam$MATH_AVG, total_exam$ENG_AVG,  names = c("수학평균", "영어평균"), col = c("green", "yellow"))
