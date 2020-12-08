@@ -1,1 +1,49 @@
-ㅇㄴ
+# W02
+
+x3 <- seq(1,10)
+x3
+x2 <- c(1:10)
+x2
+x3 <- seq(1,10, by=2)
+x3
+y1 <- c('Hello', 'Hi', 'Hello~!')
+y1
+# 실습문제 
+
+score = c(80,60,70,50,90)
+m_score <- mean(score)
+m_score
+
+#숫자형 벡터 생성
+
+ex_vector1 <- c(-1,0,1)
+ex_vector1
+str(ex_vector1)
+length(ex_vector1)
+
+# 문자형 벡터 생성
+
+ex_vector2 <- c("hello", "hi!")
+ex_vector2
+ex_vector3 <- c("1","2","3")
+ex_vector3
+str(ex_vector3)
+
+# 논리형 벡터 생성
+
+ex_vector4 <- c(TRUE, FALSE, FALSE, TRUE)
+ex_vector4
+str(ex_vector4)
+
+# 행렬 생성하기
+
+x <- c(1,2,3,4,5,6)
+matrix(x, nrow = 3)
+matrix(x, nrow = 3, byrow = F)
+
+### 실습문제
+z <- seq(1, 20)
+matrix(z, nrow = 4, ncol = 5, byrow = T)
+
+e <- seq(1,99, by=2)
+matrix(e, nrow = 10, ncol = 5, byrow = T)
