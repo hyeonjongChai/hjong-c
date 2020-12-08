@@ -1,0 +1,523 @@
+### W05 ###
+
+install.packages("foreign")
+library(foreign)
+
+raw_welfare <- read.spss(file= "C:/Rstudy/Koweps_hpc10_2018_beta1.sav", to.data.frame = T)
+welfare <- raw_welfare
+head(welfare)
+dim(welfare)
+str(welfare)
+summary(welfare)
+
+welfare <- rename(welfare, sex=h10_g3, birth= h10_g4,
+                  marriage= h10_g10, religion= h10_g11,
+                  income= p1002_8aq1, code_job=h10_eco9,
+                  code_religion= h10_reg7)
+
+
+class(welfare$sex)
+table(welfare$sex)
+
+welfare$sex <- ifelse(welfare$sex == 9, NA, welfare$sex)
+welfare$sex <- welfare %>% filter(!is.na(sex))
+table(is.na(welfare$sex))
+
+welfare$sex <- ifelse(welfare$sex == 1, "male", "female")
+table(welfare$sex)
+welfare_sex <- table(welfare$sex)
+barplot(welfare_sex)
+
+class(welfare$income)
+summary(welfare$income)
+welfare$income <- ifelse(welfare$income %in% c(0,9999), NA, welfare$income)
+income_tr <- table(is.na(welfare$income))
+income_tr
+
+sex_income <- welfare %>% filter(!is.na(income)) %>% group_by(sex) %>% summarize(mean_income = mean(income))
+sex_income
+barplot(sex_income$mean_income, xlab="SEX", ylab="MEAN_INCOME")
+
+
+###################################################
+
+class(welfare$birth)
+summary(welfare$birth)
+table(is.na(welfare$birth))
+
+welfare$birth <- ifelse(welfare$birth == 9999, NA, welfare$birth)
+table(is.na(welfare$birth)) 
+barplot(welfare$birth)
+
+welfare$age <- 2018-welfare$birth+1
+summary(welfare$age)
+barplot(welfare$age)
+
+age_income <- welfare %>% filter(!is.na(income)) %>% group_by(age) %>% summarise(mean_income = mean(income)) 
+age_income
+plot(age_income)
+
+library(dplyr)
+library(ggplot2)
+library(descr)
+load("C:/Rstudy/welfare.rda")
+
+table(welfare$ageg)
+sex_age <- welfare %>% filter(!is.na(income)) %>% group_by(age, sex) %>% summarise(mean_income = mean(income))
+sex_age
+class(welfare$code_job)
+table(welfare$code_job)
+
+library(readxl)
+list_job <- read_excel("c:/Rstudy/Koweps_Codebook.xlsx", col_names = T, sheet = 2)
+dim(list_job)
+welfare <- left_join(welfare, list_job, by = "code_job")
+head(welfare)
+
+table(welfare$job)
+welfare %>% filter(!is.na(code_job)) %>% select(code_job, job) %>% head(10)
+
+job_income <- welfare %>% filter(!is.na(job) & !is.na(income)) %>% group_by(job) %>% summarise(mean_income = mean(income))
+job_income
+
+top10 <- job_income %>% arrange(desc(mean_income)) %>% head(10)
+top10
+ggplot(top10, aes(x=job, y=mean_income)) + geom_col()+coord_flip()
+
+bottom10 <- job_income %>% arrange(mean_income) %>% head(10)
+ggplot(bottom10, aes(x=job, y=mean_income)) +geom_col() + coord_flip()+ylim(0,850)
+
+job_male <- welfare %>% filter(!is.na(job) & sex == "male") %>%
+  group_by(job) %>% summarise(n=n()) %>%
+  arrange(desc(n)) %>% head(10)
+job_male
+
+job_female <- welfare %>% filter(!is.na(job) & sex == "female") %>%
+  group_by(job) %>% summarise(n=n()) %>%
+  arrange(desc(n)) %>% head(10)
+job_female
+
+
+ggplot(job_male, aes(x=job, y=n)) + geom_col() + coord_flip()
+ggplot(job_female, aes(x=job, y=n)) + geom_col() + coord_flip()
+ggplot(job_male, aes(x=reorder(job,n), y=n)) + geom_col() + coord_flip()
+ggplot(job_female, aes(x=reorder(job,-n), y=n)) + geom_col() + coord_flip()
+reorder()
+
+### W06 ###
+
+library(ggplot2)
+library(descr)
+library(dplyr)
+
+View(airquality)
+
+ggplot(airquality, aes(x = Day, y = Temp)) + geom_point()
+table(airquality$Ozone)
+
+table(is.na(airquality$Ozone))
+
+air_ozone <- airquality %>% filter(!is.na(Ozone))
+air_ozone  
+
+air_ozone <- air_ozone %>% filter(Wind >= 10 & Temp <= 70) %>% select(Month, Day)
+ggplot(air_ozone, aes(x = Day, y = Month)) + geom_point()
+
+library(MASS)
+library(descr)
+library(dplyr)
+library(ggplot2)
+
+Cars93
+View(Cars93)
+table(Cars93$Type)
+car_type <- Cars93 %>% group_by(Type) %>% summarise(n=n())
+car_type
+ggplot(car_type, aes(x=Type, y=n)) + geom_col()
+
+car_type_airbag <- Cars93 %>% group_by(Type, AirBags) %>% summarise(n=n())
+ggplot(car_type_airbag, aes(x=Type, y=n, fill= AirBags)) + geom_col()
+
+car_type_airbag2 <- Cars93 %>% filter(AirBags != "None") %>% group_by(Type, AirBags) %>% summarise(n=n()) 
+ggplot(car_type_airbag2, aes(x=Type, y=n, fill= AirBags)) + geom_col(position = "dodge")
+
+library(readxl)
+library(dplyr)
+library(foreign)
+library(ggplot2)
+
+raw_welfare <- read.spss(file= "C:/Rstudy/Koweps_hpc10_2018_beta1.sav", to.data.frame = T)
+welfare <- raw_welfare
+
+welfare <- rename(welfare,                  
+                  sex = h10_g3,              # 성별
+                  birth = h10_g4,            # 태어난 연도
+                  marriage = h10_g10,        # 혼인 상태
+                  religion = h10_g11,        # 종교
+                  income = p1002_8aq1,       # 월급
+                  code_job = h10_eco9,       # 직업 코드
+                  code_region = h10_reg7)    # 지역 코드
+
+
+welfare$sex <- ifelse(welfare$sex == 9, NA, welfare$sex) # 무응답 9 -> 결측치로 만들기 위해 NA
+table(is.na(welfare$sex))
+welfare$sex <- ifelse(welfare$sex == 1, "male", "female")
+table(welfare$sex)
+
+welfare$income <- ifelse(welfare$income %in% c(0,9999), NA, welfare$income) # 수입이 0이거나 9999이면 결측처리
+table(is.na(welfare$income))
+
+welfare$birth <- ifelse(welfare$birth == 9999, NA, welfare$birth)
+table(is.na(welfare$birth)) 
+welfare$age <- 2018-welfare$birth+1
+
+## 어떤 연령대의 월급이 가장 많을까?
+
+welfare <- welfare %>% mutate(ageg = ifelse(age < 30, "young",
+                                            ifelse(age <= 59, "middle", "old")))
+table(welfare$ageg)
+ageg_income <- welfare %>% filter(!is.na(income)) %>% group_by(ageg) %>% summarise(mean_income = mean(income))
+ageg_income
+ggplot(data = ageg_income, aes(x = ageg, y = mean_income)) + geom_col()
+ggplot(data = ageg_income, aes(x = ageg, y = mean_income)) + geom_col() +
+  scale_x_discrete(limits = c("young", "middle", "old")) # 범주 순서 정하기
+
+
+## 성별 월급 차이는 연령대별로 다를까?
+
+sex_income <- welfare %>% filter(!is.na(income)) %>% group_by(ageg, sex) %>% summarise(mean_income = mean(income))
+sex_income
+
+ggplot(data = sex_income, aes(x = ageg, y = mean_income, fill = sex)) +geom_col() +scale_x_discrete(limits = c("young", "middle", "old"))
+
+ggplot(data = sex_income, aes(x = ageg, y = mean_income, fill = sex)) + geom_col(position = "dodge") +
+  scale_x_discrete(limits = c("young", "middle", "old"))
+
+### 나이 및 성별 월급 차이 분석하기
+sex_age <- welfare %>% filter(!is.na(income)) %>% group_by(age, sex) %>% summarise(mean_income = mean(income))
+sex_age
+ggplot(data = sex_age, aes(x = age, y = mean_income, col = sex)) + 
+  geom_line()
+
+
+
+## 어느 직업이 월급을 가장 많이 받을까?
+
+class(welfare$code_job)
+table(welfare$code_job)
+library(readxl)
+list_job <- read_excel("c:/Rstudy/Koweps_Codebook.xlsx", col_names = T, sheet = 2)
+dim(list_job)
+welfare <- left_join(welfare, list_job, by = "code_job")
+
+head(welfare)
+table(welfare$job)
+welfare %>% filter(!is.na(code_job)) %>% select(code_job, job) %>% head(10)
+
+
+job_income <- welfare %>% filter(!is.na(job) & !is.na(income)) %>% group_by(job) %>% summarise(mean_income = mean(income))
+job_income
+
+top10 <- job_income %>% arrange(desc(mean_income)) %>% head(10) # 내림차순 정렬
+top10
+ggplot(top10, aes(x=job, y=mean_income)) + geom_col()+coord_flip()
+
+bottom10 <- job_income %>% arrange(mean_income) %>% head(10)
+ggplot(bottom10, aes(x=job, y=mean_income)) +geom_col() + coord_flip()+ylim(0,850)
+
+## 성별로 어떤 직업이 가장 많을까?
+
+job_male <- welfare %>% filter(!is.na(job) & sex == "male") %>%
+  group_by(job) %>% summarise(n=n()) %>%
+  arrange(desc(n)) %>% head(10)
+job_male
+
+job_female <- welfare %>% filter(!is.na(job) & sex == "female") %>%
+  group_by(job) %>% summarise(n=n()) %>%
+  arrange(desc(n)) %>% head(10)
+job_female
+
+
+ggplot(job_male, aes(x=job, y=n)) + geom_col() + coord_flip()
+ggplot(job_female, aes(x=job, y=n)) + geom_col() + coord_flip()
+ggplot(job_male, aes(x=reorder(job,n), y=n)) + geom_col() + coord_flip()
+ggplot(job_female, aes(x=reorder(job,-n), y=n)) + geom_col() + coord_flip()
+
+### W07 ###
+
+library(MASS)
+library(descr)
+library(dplyr)
+library(ggplot2)
+
+Cars93
+View(Cars93)
+table(Cars93$Type)
+car_type <- Cars93 %>% group_by(Type) %>% summarise(n=n())
+car_type
+ggplot(car_type, aes(x=Type, y=n)) + geom_col()
+
+car_type_airbag <- Cars93 %>% group_by(Type, AirBags) %>% summarise(n=n())
+ggplot(car_type_airbag, aes(x=Type, y=n, fill= AirBags)) + geom_col()
+
+car_type_airbag2 <- Cars93 %>% filter(AirBags != "None") %>% group_by(Type, AirBags) %>% summarise(n=n()) 
+ggplot(car_type_airbag2, aes(x=Type, y=n, fill= AirBags)) + geom_col(position = "dodge")
+
+library(dplyr)
+library(ggplot2)
+library(descr)
+
+load("C:/Rstudy/welfare.rda")
+
+
+# 종교유무에 따른 이혼율 분석
+
+welfare$religion <- ifelse(welfare$religion == 1, "yes", "no")
+
+welfare$group_marriage <- ifelse(welfare$marriage == 1,"marriage", 
+                                 ifelse(welfare$marriage == 3, "divorce",NA))
+##########################
+religion_marriage <- welfare %>% 
+  filter(!is.na(group_marriage)) %>%
+  group_by(religion, group_marriage) %>%
+  summarise(n=n()) %>%
+  mutate(tot_group = sum(n)) %>%
+  mutate(pct = round(n/tot_group*100,1))
+############################
+religion_marriage
+#############################
+divorce <- religion_marriage %>% filter(group_marriage == "divorce")
+divorce
+ggplot(divorce, aes(x= religion, y=pct)) + geom_col()
+#############################
+religion_marriage <- welfare %>% 
+  filter(!is.na(group_marriage)) %>%
+  count(religion, group_marriage) %>%
+  group_by(religion) %>%
+  mutate(pct = round(n/sum(n)*100,1))
+religion_marriage
+#############################
+table(welfare$ageg)
+table(welfare$group_marriage)
+
+ageg_marriage <- welfare %>% 
+  filter(!is.na(group_marriage)) %>%
+  count(ageg, group_marriage) %>%
+  group_by(ageg) %>%
+  mutate(pct = round(n/sum(n)*100,1))
+ageg_marriage
+###############################
+
+ageg_divorce <- ageg_marriage %>%
+  filter(ageg != "young" & group_marriage == "divorce")
+ageg_divorce
+ggplot(ageg_divorce, aes(x=ageg, y=pct)) + geom_col()
+  
+###############################
+
+ageg_religion_marriage <- welfare %>%
+  filter(!is.na(group_marriage) & ageg != "young") %>%
+  count(ageg, religion, group_marriage) %>%
+  group_by(ageg, religion) %>%
+  mutate(pct = round(n/sum(n)*100,1))
+ageg_religion_marriage
+
+#################################
+df_divorce <- ageg_religion_marriage %>%
+  filter(group_marriage == "divorce")
+df_divorce
+ggplot(df_divorce, aes(x=ageg, y=pct, fill = religion)) + geom_col(position = "dodge")
+
+
+###############################
+
+# 노년층이 많은 지역은 어딜까?
+
+table(welfare$code_region)
+list_region <- data.frame(code_region = c(1:7),
+                          region = c("서울", "수도권(인천/경기)","부산/경남/울산", "대구/경북",
+                                     "대전/충남", "강원/충북", "광주/전남/전북/제주도"))
+
+list_region
+welfare <- left_join(welfare, list_region, id = "code_region")
+
+welfare %>% select(code_region, region) %>% head(20)
+
+region_ageg <- welfare %>%
+  count(region,ageg) %>%
+  group_by(region) %>%
+  mutate(pct = round(n/sum(n)*100,2))
+
+region_ageg
+#########################################
+ggplot(region_ageg, aes(x=region, y=pct, fill=ageg)) + geom_col() + coord_flip() #가로막대그래프
+#######################################3
+
+list_order_old <- region_ageg %>% filter(ageg =="old") %>% arrange(pct)
+listt_order_old
+order <- list_order_old$region
+order
+ggplot(region_ageg, aes(x=region, y=pct, fill=ageg)) + geom_col() + coord_flip() + scale_x_discrete(limits=order) # old 순으로 
+
+#######################################
+#factor로 순서 정하기
+
+levels(region_ageg$ageg)
+region_ageg$ageg <- factor(region_ageg$ageg, levels = c("old", "middle", "young"))
+
+levels(region_ageg$ageg)
+ggplot(data=region_ageg, aes(x=region, y=pct, fill= ageg)) + geom_col() +coord_flip() +scale_x_discrete(limits=order)
+
+library(ggplot2)
+library(MASS)
+library(dplyr)
+View(Cars93)
+car_Type_train<-Cars93%>%group_by(Type,DriveTrain)%>%summarise(n=n())
+car_Type_train
+
+car_type<-Cars93%>%group_by(Type)%>%summarise(n=n())
+t(car_type)
+car_Type
+
+str(Cars93)
+table(Cars93)
+
+names(Cars93)
+#차트 그리기
+ggplot(car_Type_train, aes(x=Type, y= n, fill = DriveTrain)) + geom_col()
+ggplot(car_Type_train, aes(x=reorder(Type,n), y= n, fill = DriveTrain)) + geom_col()
+
+list_order<-car_Type_train%>%filter(DriveTrain=="Front") %>%arrange(n)
+
+list_order
+order <- list_order$Type
+order
+
+car_Type_train$DriveTrain <- factor(car_Type_train$DriveTrain,
+                                    levels = c("Front", "Rear", "4WD"))
+ggplot(car_Type_train, aes(x=Type, y= n, fill = DriveTrain)) + geom_col()+scale_x_discrete(limits=order)
+
+
+
+
+ggplot(car_Type_train, aes(x=Type, y=n, fill = DriveTrain)) + geom_col() +
+  coord_flip() + scale_x_discrete(limits = order)
+
+
+#################################################################3
+#데이터 불러오기(in ggplot)
+
+View(diamonds)
+subset(diamonds, cut== 'Premium')
+aa <- subset(diamonds, cut == c('premium', 'Fair'))
+cc <- subset(diamonds, cut %in% c('premium', "Fair", 'Good'))  
+#변수 세개 이상일 때는 == 연산 대신  %in% 연산을 하는게 좋다.(두개도 가능)
+
+View(aa)
+View(cc)
+#################################################################
+#실습문제
+
+View(Cars93)
+str(Cars93)
+table(Cars93$Type)
+Cars93_sample <- subset(Cars93, Type == 'van' | Type == 'compact',
+                        select = c(Type, Origin, MPG.city, MPG.highway))
+View(Cars93_sample)
+
+library(reshape2)
+Cars93_sample_melt <- melt(Cars93_sample, id.vars = c("Type", "Origin"),
+                        measures.vars=c(" MPG.city", "MPG.highway"))
+
+dim(Cars93)
+
+
+
+################################################################### 
+#melt 함수
+
+install.packages("reshape2")
+
+df <- data.frame(이름 = c("민철", "지수", "지영"),
+                   국어 = c(100, 70, 50), 영어 = c(80,70,100), 컴퓨터 = c(85,100,80))
+
+df
+exam1 <- melt(df)
+exam1
+
+exam1 <- melt(df, id.vars = "이름", measure.vars = c("국어"))
+exam1
+exam1 <- melt(df, id.vars = "이름", measure.vars = c("국어", "컴퓨터"))
+exam1
+
+##############################################################
+
+Cars93_com<-subset(Cars93,select=c(Type,Origin)
+Cars93_com
+
+Cars93_sample<-subset(Cars93,Type=='compact',select=c(Type,Origin))
+Cars93_sample               
+
+library(ggplot2)
+library(MASS)
+library(dplyr)
+View(Cars93)
+car_Type_train <- Cars93 %>%
+  group_by(Type, DriveTrain) %>%
+  summarise(n=n())
+car_Type_train
+
+#차트 그리기
+ggplot(car_Type_train, aes(x=Type, y= n, fill = DriveTrain)) + geom_col()
+
+list_order <- car_Type_train %>%
+  filter(DriveTrain == "Front") %>%
+  arrange(n)
+
+list_order
+order <- list_order$Type
+order
+
+car_Type_train$DriveTrain <- factor(car_Type_train$DriveTrain,
+                                    levels = c("Front", "Rear", "4WD"))
+
+ggplot(car_Type_train, aes(x=Type, y=n, fill = DriveTrain)) + geom_col() +
+  coord_flip() + scale_x_discrete(limits = order)
+
+
+
+#데이터 불러오기(in ggplot)
+
+View(diamonds)
+subset(diamonds, cut== 'Premium')
+aa <- subset(diamonds, cut == c('premium', 'Fair'))
+cc <- subset(diamonds, cut %in% c('premium', "Fair", 'Good'))  
+#변수 세개 이상일 때는 == 연산 대신  %in% 연산을 하는게 좋다.(두개도 가능)
+
+View(aa)
+View(cc)
+
+#실습문제
+
+View(Cars93)
+str(Cars93)
+table(Cars93$Type)
+Cars93_sample <- subset(Cars93, Type == 'van' | Type == 'compact',
+                        select = c(Type, Origin, MPG.city, MPG.highway))
+View(Cars93_sample)
+dim(Cars93)
+#에러는 시발 왜 나는거야;;
+
+install.packages("reshape2")
+library(reshape2)
+df <- data.frame(이름 = c("민철", "지수", "지영"),
+                   국어 = c(100, 70, 50), 영어 = c(80,70,100), 컴퓨터 = c(85,100,80))
+
+df
+exam1 <- melt(df)
+exam1
+
+exam1 <- melt(df, id.vars = "이름", measure.vars = c("국어"))
+exam1
+exam1 <- melt(df, id.vars = "이름", measure.vars = c("국어", "컴퓨터"))
+exam1
