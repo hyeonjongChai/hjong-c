@@ -253,3 +253,103 @@ for line in lines:
     row = row[1:]  # 행이름 제외
     row = list(map( int, row))  # 각 원소의 값을 정수로 변환    
     data2.append(row)  # data2 리스트에 추가
+    
+    
+ ### 소수 모듈 ###
+ 
+ PRIME.py
+ 
+ def is_prime(value):
+    result = True
+    count = 0
+    for i in range(2, value):
+        if (value % i == 0):
+            count += 1
+            if (count == 0):
+                result = True
+            else:
+                result = False
+                
+    return result
+    
+  def scan_prime(values):
+    values = []
+    primes = []
+    
+    for j in values:
+        if is_prime(j) == True:
+            primes.append(j)
+    return primes
+            
+    
+  test_PRIME.py
+  
+  #1
+num1to2 = []
+while True:
+    a = int(input("첫 번째 숫자를 입력해주세요: "))
+    
+    if a == 0:
+        print("경고: 0을 입력하여 프로그램이 종료됩니다.")
+        break
+            
+    elif a < 2:
+        print("경고: 2이상의 수를 입력해주세요.")
+        continue
+        
+    break
+
+    
+while True:
+    b = int(input("두 번째 숫자를 입력해주세요: "))
+    if b == 0:
+        print("경고: 0을 입력하여 프로그램이 종료됩니다.")
+        exit()
+            
+    elif b < 2:
+        print("경고: 2이상의 수를 입력해주세요.")
+        continue
+        
+    elif a == b:
+        print("경고: 범위는 두 수가 같을 수 없습니다.")
+        continue        
+    break
+    
+#2
+num1to2.clear()
+
+if a > b:
+    print("경고: 범위는 작은 값을 먼저 입력해야 합니다.") 
+    for i in range(b, a+1):
+        num1to2.append(i)    
+        
+else:    
+    for i in range(a, b+1):
+        num1to2.append(i)
+
+#3 
+primes = []
+primes = scan_prime(num1to2)
+print(primes)
+
+
+
+if primes == []:
+    print("""입력 범위 시작: {}
+입력 범위 끝: {}
+
+최저 소수 값: {}
+최대 소수 값: {}
+소수의 갯수: {}""".format(num1to2[0],num1to2[-1],"NONE", "NONE", len(primes)))
+
+else:
+    print("""입력 범위 시작: {}
+입력 범위 끝: {}
+
+최저 소수 값: {}
+최대 소수 값: {}
+소수의 갯수: {}""".format(num1to2[0],num1to2[-1],min(primes), max(primes), len(primes)))
+
+    
+       
+
