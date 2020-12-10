@@ -1,0 +1,255 @@
+### 가장 큰 정사각형 ###
+
+#1
+def solution(board):
+    M = len(board)
+    N = len(board[0])
+    for i in range(1, M):
+        for j in range(1, N):
+            if board[i][j] >= 1:
+                board[i][j] = min(board[i-1][j], board[i][j-1], board[i-1][j-1]) + 1
+    print(board)
+    flat_list = []
+    for z in board:
+        for x in z:
+            flat_list.append(x)
+    return max(flat_list) **2
+    
+    
+#2 
+from pandas.core.common import flatten
+def solution(board):
+    M = len(board)
+    N = len(board[0])
+    for i in range(1, M):
+        for j in range(1, N):
+            if board[i][j] >= 1:
+                board[i][j] = min(board[i-1][j], board[i][j-1], board[i-1][j-1]) + 1
+    return max(flatten(board)) **2
+		
+#3
+from itertools import chain
+def solution(board):
+    M = len(board)
+    N = len(board[0])
+    for i in range(1, M):
+        for j in range(1, N):
+            if board[i][j] >= 1:
+                board[i][j] = min(board[i-1][j], board[i][j-1], board[i-1][j-1]) + 1
+    return max(list(chain.from_iterable(board))) **2
+		
+#4
+def solution(board):
+    M = len(board)
+    N = len(board[0])
+    for i in range(1, M):
+        for j in range(1, N):
+            if board[i][j] >= 1:
+                board[i][j] = min(board[i-1][j], board[i][j-1], board[i-1][j-1]) + 1
+    return max([num for row in board for num in row]) **2
+		
+		
+### 짝지어 제거하기 ### 
+
+s = input()
+stack = []
+
+def solution(s):
+    for i in s:
+        if len(stack) == 0:
+            stack.append(i)
+            
+        elif stack[-1] == i:
+            stack.pop()
+        
+        else:
+            stack.append(i)
+    
+    if len(stack) == 0:
+        return 1
+    else:
+        return 0
+
+solution(s)
+
+### 괄호 일치 검사기 ###
+
+def validate_par(test): # 수식의 괄호 일치 검사기
+    check = []
+    validate = True # 검사가 FAIL인 경우 False로 저장
+    rule = None
+    
+    pairs = {")": "(", "}": "{", "]": "["}
+    
+    rule_1 = "FAIL RULE1: 괄호가 닫히지 않음."
+    rule_2 = "FAIL RULE2: 시작 괄호가 없음."
+    rule_3 = "FAIL RULE3: 괄호 쌍이 맞지 않음."
+    
+    # enumerate 함수를 통해 에러나는 자리 확인
+    for index, t in enumerate(test):
+        if t == "(" or t == "{" or t == "[":
+            check.append(t)
+
+        elif t == ")" or t == "}" or t == "]":
+            # 스택이 비어있으면 에러 (규칙2)
+            if len(check) == 0:
+                print(test) # 테스트 샘플 출력
+                print(" " * index + "^", rule_2) # 테스트 샘플 다음 row에서 ^ 을 통해 에러나는 자리 표시 
+                validate = False
+                break
+            
+            # 스택에서 pop out 하는 괄호와 짝이 맞지 않으면 에러 (규칙3) 
+            elif check.pop() != pairs[t]:
+                print(test)
+                print(" " * index + "^", rule_3)
+                validate = False
+                break
+                
+    # 지금까지 검사가 성공한 경우만 최종검사
+    if validate:
+        # 괄호가 닫히지 않으면 에러 (규칙1)
+        if len(check) != 0:
+            print(test)
+            print(" " * index + "^", rule_1)
+            validate = False
+    
+        else:
+            print("검사결과: OK")
+						
+### 파일 입출력 ###
+
+#1
+# 사용할 변수 준비
+inFp = None  # 파일 핸들
+inStr = ""   # 읽을 문자열
+inList = []  # readlines 의 결과를 저장할 변수
+
+# 파일 열기 (유니코드로 읽기)
+inFp = open("myfile.txt", "r", encoding="UTF-8")
+inList = inFp.readlines()
+inList
+for inStr in inList:
+    print(inStr, end="")
+inFp.close()
+
+#2
+# 변수 준비
+inFp = None
+inStr = ""
+inList = []  # readlines 의 결과를 저장할 변수
+
+with open("2ndfile.txt","r",encoding="UTF-8") as inFp:inList = inFp.readlines()
+		
+for inStr in inList:
+    print(inStr, end="")
+		
+### 간단한 암호화 ###
+
+plain = "This is Python!"
+
+enc = []
+for c in plain:
+    print(c)
+		
+enc = []
+for c in plain:
+    enc.append(ord(c) + 3)
+		
+text = []
+for n in enc:
+    text.append(chr(n))
+		
+text
+['W', 'k', 'l', 'v', '#', 'l', 'v', '#', 'S', '|', 'w', 'k', 'r', 'q', '$']
+"".join(text)
+
+encrypted = 'Wklv#lv#S|wkrq$'
+
+original = ""
+dec = []
+for x in encrypted:
+    d = ord(x) - 3
+    dec.append(chr(d))
+print(dec)
+original = "".join(dec)
+
+### matplolib 그래프 실습 ###
+
+plt.rc("font", family="Malgun Gothic")
+plt.rcParams["axes.unicode_minus"] = False  #음수
+plt.title("색상") #제목
+plt.plot( [-10,-20,30,40], "^-", color="blue", label="파랑") # 세모표시, 색 블루, 라벨 파랑
+plt.plot( [40,30,20,10], "o-", color="red", label="빨강") # 원 표시
+plt.legend() 
+plt.show()
+
+### 표 데이터 입출력 ###
+
+data = [
+    [87,77,40,56],
+    [98,89,56,76],
+    [78,99,87,78],
+    [69,91,88,90]
+]
+
+#1 
+
+with open("data1.csv", "w", encoding="UTF-8") as f:
+    f.writelines("구분,A,B,C,D\n")
+    names = ["가", "나", "다", "라"]
+    for row in range( len(names) ):
+        f.writelines(names[row])
+        f.writelines(",")
+        for column in range( len(data[row]) ):
+            f.writelines( str(data[row][column]) )
+            if column < 3:
+                f.writelines(",")
+        f.writelines("\n")
+				
+#2
+
+with open("data2.csv", "w", encoding="UTF-8") as f:
+    f.writelines("구분,A,B,C,D\n")
+    names = ["가", "나", "다", "라"]
+    for row in range( len(names) ):
+        f.writelines(names[row])
+        f.writelines(",")
+        f.writelines(",".join( map( str, data[row] ) ) )
+        f.writelines("\n")
+				
+#3
+# 헤더 포함
+
+import csv
+
+with open("data4.csv", "w", newline="", encoding="UTF-8") as f:
+    # CSV Writer 사용.
+    writer = csv.writer(f)
+    writer.writerow(["구분", "A", "B", "C", "D"])
+    names = ["가", "나", "다", "라"]
+    for row in range( len(data) ):
+        writer.writerow( [ names[row] ] + data[row] )
+				
+#4
+
+lines = []
+with open("data4.csv", "r", encoding="UTF-8") as f:
+    lines = f.readlines()
+print(lines)
+
+data2 = []
+for line in lines:
+    line = line[0:-1]
+    print(line.split(","))
+		
+data2 = []
+for line in lines:
+    
+    if line == lines[0]: # 제목행은 SKIP
+        continue    
+    
+    line = line[0:-1]  # 마지막 개행문자 제외
+    row = line.split(",")  # 행이름 + 값들    
+    row = row[1:]  # 행이름 제외
+    row = list(map( int, row))  # 각 원소의 값을 정수로 변환    
+    data2.append(row)  # data2 리스트에 추가
